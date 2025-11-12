@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>재방문 이벤트 QR</title>
+  <style>
+    :root{--bg:#0b0f14;--card:#121826;--text:#e5e7eb;--muted:#94a3b8;--accent:#7c3aed}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:radial-gradient(1200px 600px at 10% 0%,rgba(124,58,237,.18),transparent),
+                 radial-gradient(1000px 500px at 90% 30%,rgba(34,211,238,.10),transparent),
+                 var(--bg);
+      color:var(--text);
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Noto Sans KR,Helvetica,Arial,"Apple SD Gothic Neo","맑은 고딕",sans-serif;
+      display:grid;place-items:center;padding:24px
+    }
+    .card{width:100%;max-width:680px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.35);overflow:hidden}
+    .header{padding:24px 24px 12px;font-weight:700;font-size:18px;text-align:center}
+    .content{padding:0 24px 24px;display:grid;gap:16px}
+    .qr{display:grid;place-items:center;background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px}
+    .qr img{width:260px;height:260px;object-fit:contain;background:#fff;border-radius:12px;padding:8px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;width:100%;height:48px;border:0;border-radius:12px;
+      background:linear-gradient(135deg,var(--accent),#4f46e5);color:#fff;font-weight:700;cursor:pointer}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .helper{color:var(--muted);font-size:13px;text-align:center}
+  </style>
+</head>
+<body>
+  <main class="card" id="app">
+    <div class="header">재방문 이벤트 QR</div>
+    <section class="content">
+      <div class="qr"><img id="qr" alt="QR 이미지" decoding="async" referrerpolicy="no-referrer" /></div>
+      <button class="btn" id="dl" type="button" disabled>QR 다운로드하기</button>
+      <div class="helper" id="msg">QR 이미지 주소를 불러오는 중…</div>
+    </section>
+  </main>
+
+  <script>
+  (function(){
+    const img = document.getElementById('qr');
+    const dl  = document.getElementById('dl');
+    const msg = document.getElementById('msg');
+    const p   = new URLSearchParams(location.search);
+
+    // 기본 QR 파일명은 qr.png
+    const basePath = location.pathname.replace(/[^\/]*$/, '');
+    const defaultSrc = location.origin + basePath + 'qr.png';
+
+    // ?qr= 붙으면 그걸 우선 사용
+    const raw = p.get('qr');
+    const chosen = raw ? decodeURIComponent(raw) : defaultSrc;
+
+    function setSrc(u){
+      const buster = (u.includes('?') ? '&' : '?') + 'v=' + Date.now();
+      img.src = u + buster;
+    }
+
+    img.onload = function(){
+      dl.disabled = false;
+      msg.textContent = 'QR 이미지를 길게 눌러 저장하거나, 아래 버튼으로 다운로드하세요.';
+    };
+    img.onerror = function(){
+      dl.disabled = true;
+      msg.innerHTML = 'QR 이미지를 불러오지 못했습니다.<br>파일명 또는 경로를 확인해주세요.';
+    };
+
+    dl.onclick = function(){
+      const a = document.createElement('a');
+      a.href = img.src;
+      a.download = 'qr.png';
+      document.body.appendChild(a); a.click(); a.remove();
+    };
+
+    setSrc(chosen);
+  })();
+  </script>
+</body>
+</html>
